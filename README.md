@@ -17,7 +17,8 @@ _Not in any particular importance or order to be done_
 1. Fixing the FloodFill implementation
 2. Optimizing and cleaning up Pig's path finding
 3. Optimizing the simulation speed of the different games
-4. Splitting the the files into multiple functions for conciseness
+4. Splitting the the functions and classes into multiple files
 5. **CLEANING UP CODE IN THE BOT FUNCTIONS AND CLASSES**
-6. Improving the image capture speed
+6. Improving the initial image capture (5 seconds to capture webgame and convert to data)
 7. Have program recognize pig's position in webgame
+8. Debugging memory leak when running visually
