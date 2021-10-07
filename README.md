@@ -22,7 +22,7 @@ In the webgame, the pig takes a somewhat predictable path: the shortest path tow
 
 To shorten this calculation, the Bot uses Monte-Carlo Tree Search through selection, expansion, simulation, and backup. In selection, Bot tests a potential block and scores the game state with a heuristic function. If there is potential in the block (score is above certain threshold), the Bot moves onto expansion and simulation. It runs through the pig's mobility options, repeating back from selection->simulation until...
 1. Absolute win is achieved
-2. Possible, absolute lose occurs
+2. Possible loss occurs
 
 at which point Bot terminates branch and backs up into previous game state. I believe the back up process is the bottle-neck right now, as it uses python's deepcopy at two different points to save and load previous game states.
 
