@@ -18,7 +18,13 @@ Currently, the bot is able to simulate 32 different games in ~20 seconds. Althou
 The bot can reach upwards of 22 rounds using its current algorithms and logic. Accuracy could be improved by simulating pig's mobility options after forcing moves (where bot must block an immediate edge to prevent pig win), however this would come at a HEAVY cost of run time. Run time optimizations must be done before this is possible.
 
 ## Algorithms
+In the webgame, the pig takes a somewhat predictable path: the shortest path towards an edge. **However, it will not necessarily take the most OPTIMAL path**. If the pig were presented two paths, one that lead to 1 possible win and another leading to 3, the probability between the two would be 50/50. This means that at every point where the pig has multiple mobility options, player must choose subsequent blocks that lead to an absolute victory. 
 
+To shorten this calculation, the Bot uses Monte-Carlo Tree Search through selection, expansion, simulation, and backup. In selection, Bot tests a potential block and scores the game state with a heuristic function. If there is potential in the block (score is above certain threshold), the Bot moves onto expansion and simulation. It runs through the pig's mobility options, repeating back from selection->simulation until...
+1. Absolute win is achieved
+2. Possible, absolute lose occurs
+
+at which point Bot terminates branch and backs up into previous game state. I believe the back up process is the bottle-neck right now, as it uses python's deepcopy at two different points to save and load previous game states.
 
 ## Program In Action
 
