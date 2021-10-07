@@ -1,6 +1,6 @@
 # Block-The-Pig-Bot
 
-Simulates [Block the Pig](https://www.coolmathgames.com/0-block-the-pig), a hex grid maze-like game. In the original game, the player is allowed two free moves to block in the grid, where each subsequent block the pig can move. The game ends once the pig reaches an edge, or the player completely restricts the pig from reaching an edge.
+Simulates [Block the Pig](https://www.coolmathgames.com/0-block-the-pig), a hex grid maze-like game. In the original game, the player is allowed two free moves to block in the grid, where each subsequent block results in a pig move. The game ends once the pig reaches an edge, or the player completely restricts the pig from reaching an edge.
 ![gameComparison](https://user-images.githubusercontent.com/70815649/136258625-01b810d5-04cb-4a54-83ad-7d86588e78b2.PNG)_Real game v.s. Simulation_
 
 
