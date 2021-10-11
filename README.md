@@ -10,12 +10,12 @@ To achieve all of this, the project features:
 * HexMap Creation(Including Graphs and Algorithms), through an incredibly useful [reference](https://www.redblobgames.com/grids/hexagons/).
 * Image Recognition and Manipulation, reading in the webgame data and converting it into useful information.
 * A Bot using Monte-Carlo Tree Search, playing through multiple games to determine the next "best" block that achieves an absolute win.
-* 32 different games for testing and debugging (all read from webgame).
+* 33 different games for testing and debugging (all read from webgame).
 
 ## Performance
-Currently, the bot is able to simulate 32 different games in ~20 seconds. Although this is acceptable, I believe that the simulation can be done much faster by optimizing floodfill, pig's path-finding, and **game state copying**. Moreover, heavy bottle-necks sometimes occur at the beginning stages of the game (where bot has 2 free moves) because of the sheer computation size.
+Currently, the bot is able to simulate 33 different games in ~4 seconds. This time is a massive improvement over the previous simulation speed (20 seconds) and came as a result of improving the game state copying. Still, heavy bottle-necks sometimes occur at the beginning stages of the game (where bot has 2 free moves) because of the computation depth, preventing the program from running under a second.
 
-The bot can reach upwards of 22 rounds using its current algorithms and logic. Accuracy could be improved by simulating pig's mobility options after forcing moves (where bot must block an immediate edge to prevent pig win), however this would come at a HEAVY cost of run time. Run time optimizations must be done before this is possible.
+Due to the optimizations in simulation speed, accuracy has improved as well. More pig mobility options can be excercised in various positions while maintaining a efficient runtime, allowing the bot to achieve "perfect" games where no pig move leads to a victory. As a result, the round limit should theoretically be unbounded; however, two errors are preventing this from occurring: dynamic computer vision/automation and inaccurate block detection.
 
 ## Algorithms
 In the webgame, the pig takes a somewhat predictable path: the shortest path towards an edge. **However, it will not necessarily take the most OPTIMAL path**. If the pig were presented two paths, one that lead to 1 possible win and another leading to 3, the probability between the two would be 50/50. This means that at every point where the pig has multiple mobility options, player must choose subsequent blocks that lead to an absolute victory. 
@@ -24,20 +24,22 @@ To shorten this calculation, the Bot uses Monte-Carlo Tree Search through select
 1. Absolute win is achieved
 2. Possible loss occurs
 
-at which point Bot terminates branch and backs up into previous game state. I believe the back up process is the bottle-neck right now, as it uses python's deepcopy at two different points to save and load previous game states.
+at which point Bot terminates branch and backs up into previous game state. Right now, the two things preventing the bot from winning every grame are the faulty block detection and input automation. There is just one, one singular block that is often read incorrectly when acquiring webgame data. Moreover, the bot is still not programmed to automate the game, only made to simulate games for the user. Thus, if any deviations in the actual game occurred, the moves made would still be correct but with differing orders.
 
 ## Program In Action
 
 
 ## What's Next
 _Not in any particular importance or order to be done_
-1. Fixing the FloodFill implementation
+1. Improving the FloodFill implementation and its corresponding data structure
 2. Optimizing and cleaning up Pig's path finding
-3. Optimizing the simulation speed of the different games (by improving game state copying)
+3. ~~Optimizing the simulation speed of the different games (by improving game state copying)~~
 4. Optimize performance bottle-necks at "free block" stage of the game
-5. Splitting the functions and classes into multiple files
+5. ~~Splitting the functions and classes into multiple files~~
 6. **CLEANING UP CODE IN THE BOT FUNCTIONS AND CLASSES**
-7. Improving the initial image capture (5 seconds to capture webgame and convert to data)
-8. Have program recognize pig's position in webgame
-9. Debugging memory leak when running visually
-10. Have simulation more accurately mimic real game
+7. ~~Improving the initial image capture (5 seconds to capture webgame and convert to data)~~
+8. ~~Have program recognize pig's position in webgame~~
+9. ~~Debugging memory leak when running visually~~
+10. ~~Have simulation more accurately mimic real game~~
+11. Fix the incorrect block detection for the one tile
+12. Implement bot automation so bot can play webgame without user input
