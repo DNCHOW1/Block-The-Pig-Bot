@@ -1,5 +1,6 @@
 #import mss, pickle, pyautogui, time
-import pickle, mss, time, pyautogui
+import pickle, time, mss, pyautogui
+from pyautogui import locateOnScreen
 
 def isBlocked(color):
     tol = 40
@@ -25,25 +26,26 @@ with mss.mss() as sct:
                 coord = (pointX+origX, pointY+origY)
 
             rgb = img.pixel(pointX, pointY)
-            #if i == 8:
-            #pyautogui.moveTo(coord)
-            # print(rgb)'''
-
             b = isBlocked(rgb)
+            '''if i == 8:
+                pyautogui.moveTo(coord)
+                time.sleep(1)
+                print(rgb, b)'''
+
 
             tiles[(i, j)] = b and (i!=5 or j//2!=2)
             #if i == 8: time.sleep(.5)
             #time.sleep(.5)
 
-if pyautogui.locateOnScreen("BlockThePig/pig_right.png", region=(991, 1107, 1038, 1226), grayscale=True, confidence=0.7):
+if locateOnScreen("BlockThePig/pig_right.png", region=(991, 1107, 1038, 1226), grayscale=True, confidence=0.7):
     # Pig is in default position
     print("Default")
 else:
     # Pig is not in default Position
-    print(pyautogui.locateOnScreen("BlockThePig/pig_left.png", region=(544, 574, 1340, 1904), grayscale=True, confidence=0.7))
-    print(pyautogui.locateOnScreen("BlockThePig/pig_right.png", region=(544, 574, 1340, 1904), grayscale=True, confidence=0.7))
+    print(locateOnScreen("BlockThePig/pig_left.png", region=(544, 574, 1340, 1904), grayscale=True, confidence=0.7))
+    print(locateOnScreen("BlockThePig/pig_right.png", region=(544, 574, 1340, 1904), grayscale=True, confidence=0.7))
 tiles[(5, 5)] = "p" # Temporary Fix
-add = True
+add = False
 if __name__ == "__main__":
     if add:
         with open('BlockThePig/multiple_map_data.pkl', 'ab') as output:
