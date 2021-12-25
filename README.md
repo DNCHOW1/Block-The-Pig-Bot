@@ -10,12 +10,15 @@ To achieve all of this, the project features:
 * HexMap Creation(Including Graphs and Algorithms), through an incredibly useful [reference](https://www.redblobgames.com/grids/hexagons/).
 * Image Recognition and Manipulation, reading in the webgame data and converting it into useful information.
 * A Bot using Monte-Carlo Tree Search, playing through multiple games to determine the next "best" block that achieves an absolute win.
-* 33 different games for testing and debugging (all read from webgame).
+* 34 different games for testing and debugging (all read from webgame).
 
 ## Performance
-Currently, the bot is able to simulate 33 different games in ~4 seconds. This time is a massive improvement over the previous simulation speed (20 seconds) and came as a result of improving the game state copying. Still, heavy bottle-necks sometimes occur at the beginning stages of the game (where bot has 2 free moves) because of the computation depth, preventing the program from running under a second.
+Currently, the bot is able to simulate 34 different games in ~2 seconds. This time is a massive improvement over the previous simulation speed (20 seconds) and came as a result of improving the game state copying. Still, heavy bottle-necks sometimes occur at the beginning stages of the game (where bot has 2 free moves) because of the computation depth, preventing the program from running under a second.
 
 Due to the optimizations in simulation speed, accuracy has improved as well. More pig mobility options can be excercised in various positions while maintaining a efficient runtime, allowing the bot to achieve "perfect" games where no pig move leads to a victory. As a result, the round limit should theoretically be unbounded; however, two errors are preventing this from occurring: dynamic computer vision/automation and inaccurate block detection.
+
+(Dec 2021 Update)
+As of December, performance has improved from 4 seconds to 2 seconds as a result of optimizing floodFill and optimalPath function implementations.
 
 ## Algorithms
 In the webgame, the pig takes a somewhat predictable path: the shortest path towards an edge. **However, it will not necessarily take the most OPTIMAL path**. If the pig were presented two paths, one that lead to 1 possible win and another leading to 3, the probability between the two would be 50/50. This means that at every point where the pig has multiple mobility options, player must choose subsequent blocks that lead to an absolute victory. 
@@ -31,8 +34,8 @@ at which point Bot terminates branch and backs up into previous game state. Righ
 
 ## What's Next
 _Not in any particular importance or order to be done_
-1. Improving the FloodFill implementation and its corresponding data structure
-2. Optimizing and cleaning up Pig's path finding
+1. ~~Improving the FloodFill implementation and its corresponding data structure~~
+2. ~~Optimizing and cleaning up Pig's path finding~~
 3. ~~Optimizing the simulation speed of the different games (by improving game state copying)~~
 4. Optimize performance bottle-necks at "free block" stage of the game
 5. ~~Splitting the functions and classes into multiple files~~
