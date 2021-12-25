@@ -44,7 +44,7 @@ _Not in any particular importance or order to be done_
 11. Fix the incorrect block detection for the one tile
 12. Implement bot automation so bot can play webgame without user input
 
-######(Dec 2021 Update)
+###### (Dec 2021 Update)
 As of December, performance has improved from 4 seconds to 2 seconds as a result of optimizing floodFill and optimalPath function implementations. 
 
 floodFill function only returns blocks from paths that lead to best win and second best win instead of all tiles in some vicinity. After some testing, I realized that there were blocks that would be completely detrimental to bot, allowing the pig a free move. These blocks were considered in each branching game state and delved into, costing a lot of computation time.
