@@ -17,9 +17,6 @@ Currently, the bot is able to simulate 34 different games in ~2 seconds. This ti
 
 Due to the optimizations in simulation speed, accuracy has improved as well. More pig mobility options can be excercised in various positions while maintaining a efficient runtime, allowing the bot to achieve "perfect" games where no pig move leads to a victory. As a result, the round limit should theoretically be unbounded; however, two errors are preventing this from occurring: dynamic computer vision/automation and inaccurate block detection.
 
-(Dec 2021 Update)
-As of December, performance has improved from 4 seconds to 2 seconds as a result of optimizing floodFill and optimalPath function implementations.
-
 ## Algorithms
 In the webgame, the pig takes a somewhat predictable path: the shortest path towards an edge. **However, it will not necessarily take the most OPTIMAL path**. If the pig were presented two paths, one that lead to 1 possible win and another leading to 3, the probability between the two would be 50/50. This means that at every point where the pig has multiple mobility options, player must choose subsequent blocks that lead to an absolute victory. 
 
@@ -46,3 +43,10 @@ _Not in any particular importance or order to be done_
 10. ~~Have simulation more accurately mimic real game~~
 11. Fix the incorrect block detection for the one tile
 12. Implement bot automation so bot can play webgame without user input
+
+(Dec 2021 Update)
+As of December, performance has improved from 4 seconds to 2 seconds as a result of optimizing floodFill and optimalPath function implementations. 
+
+floodFill function only returns blocks from paths that lead to best win and second best win instead of all tiles in some vicinity. After some testing, I realized that there were blocks that would be completely detrimental to bot, allowing the pig a free move. These blocks were considered in each branching game state and delved into, costing a lot of computation time.
+
+The optimalPath function, meanwhile, suffered from a bad initial implementation. I had used a depth first search algorithm to have the pig find the best path, but upon further thought using another bfs would be the best. This was because ALL the edges lead to a win, so it would have been better to expand level by level.
