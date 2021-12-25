@@ -10,7 +10,6 @@ def blockBot(hexMap, depth, moves, freeBlock, timeStart=None, score=6, quie=Fals
     coord = hexMap.pxl_to_double(pig_pos) if hexMap.draw else pig_pos
     maxScore = (None, -6)
     hexRange = None
-    #if not freeBlock: # At the beginning, only consider tiles in 3 block radius bc pig can't move
     eval = evalWinning(hexMap, coord, score, freeBlock)
     if eval:
         if eval[0] in hexMap.winningTiles and quie:
@@ -20,42 +19,38 @@ def blockBot(hexMap, depth, moves, freeBlock, timeStart=None, score=6, quie=Fals
                 hexMap.unBlockTile(eval[0])
                 return (None, -100)
 
-            # Test the many pig options???
-            futScoreAvg = 0
-            seen = set()
-            paths = hexMap.optimalPath(coord, 1, set(), [], [[0]*(10)], moves+1<=3)
-            for path in paths:
-                if path[1] not in seen:
-                    seen.add(path[1])
-                    if not freeBlock: hexMap.movePig(moves+1, path[1], draw=False)
-                    debug, potScore = blockBot(hexMap, depth-1, moves+1, max(freeBlock-1, 0), timeStart, score, True)
-                    hexMap.pig.move(pig_pos, False)
-                    #print(f"\nCP{coord}, Blocking{hexC}: DIR{path[1]}, {potScore}, {hexMap.tiles}\n")
-                    if potScore < 0:
-                        futScoreAvg = -100
-                        break
-                    futScoreAvg += potScore
-            futScoreAvg /= len(seen)
+            # Test the many pig options
+            scoreAvg = 0
+            nextMoves = hexMap.optimalPath(coord, moves+1<=4)
+            for move in nextMoves:
+                if not freeBlock: hexMap.movePig(moves+1, move, draw=False)
+                debug, potentialScore = blockBot(hexMap, depth-1, moves+1, max(freeBlock-1, 0), timeStart, score, True)
+                hexMap.pig.move(pig_pos, False)
+                if potentialScore < 0:
+                    scoreAvg = -100
+                    break
+                scoreAvg += potentialScore
+            scoreAvg /= len(nextMoves)
 
             hexMap.unBlockTile(eval[0])
-            return (None, futScoreAvg)
+            return (None, scoreAvg)
         return eval
     if moves > 2:
         hexRange, imposs = evalDanger(hexMap, coord, moves)
         if imposs: return (None, -100) # Override hexRange and imposs if immediate left win,
                                        # ORRRR, if next move won't be dangerTile
 
-    possList, winCountB, tilesB = hexMap.floodFill(coord)
+    possList, fastestWin = hexMap.floodFill(coord)
     timeNow = None
-    if len(winCountB) == 0 and not freeBlock: return (None, 100)  # Immediate win, no winning path in site
+    if fastestWin == 100 and not freeBlock: return (None, 100)  # Immediate win, no winning path in site
     for hexC in (hexRange or possList):
         if timeStart and time.time() - timeStart >= .1:
             return maxScore
         new_score, shortestStep = score, 2
-        futScoreAvg = 0
+        scoreAvg = 0
         # Copy the game state
         hexMap.blockTile(hexC, draw=False)
-        if not freeBlock: new_score, shortestStep = evalPlayWin(hexMap, coord, score, winCountB, tilesB, max(freeBlock-1, 0)) # Get the new score for blockBot
+        if not freeBlock: new_score, shortestStep = evalPlayWin(hexMap, coord, score, fastestWin, max(freeBlock-1, 0)) # Get the new score for blockBot
         #print(hexC, new_score, depth, maxScore, winCountB)
 
         if depth == 1 and not quie: # First iteration
@@ -64,33 +59,28 @@ def blockBot(hexMap, depth, moves, freeBlock, timeStart=None, score=6, quie=Fals
         # Play out every possibility until an absolute win
         if (depth >= 1 or shortestStep==2) and new_score!=100:
             # Test the pig's multiple movement options
-            seen = set()
-            paths = hexMap.optimalPath(coord, 1, set(), [], [[0]*(shortestStep+2)], moves+1<=4)
-            for path in paths:
-                if path[1] not in seen:
-                    seen.add(path[1])
-                    if not freeBlock: hexMap.movePig(moves+1, path[1], draw=False)
-                    debug, potScore = blockBot(hexMap, depth-1, moves+1, max(freeBlock-1, 0), timeNow, new_score, True)
-                    hexMap.pig.move(pig_pos, False)
-                    #print(f"\nCP{coord}, Blocking{hexC}: DIR{path[1]}, {potScore}, {hexMap.tiles}\n")
-                    if potScore < 0:
-                        futScoreAvg = -100
-                        break
-                    futScoreAvg += potScore
-            futScoreAvg /= len(seen)
+            nextMoves = hexMap.optimalPath(coord, moves+1<=4)
+            for move in nextMoves:
+                if not freeBlock: hexMap.movePig(moves+1, move, draw=False)
+                debug, potentialScore = blockBot(hexMap, depth-1, moves+1, max(freeBlock-1, 0), timeNow, new_score, True)
+                hexMap.pig.move(pig_pos, False)
+                if potentialScore < 0:
+                    scoreAvg = -100
+                    break
+                scoreAvg += potentialScore
+            scoreAvg /= len(nextMoves)
         #print("out")
-        maxScore = max((hexC, futScoreAvg or new_score), maxScore, key=lambda x: x[1])
+        maxScore = max((hexC, scoreAvg or new_score), maxScore, key=lambda x: x[1])
 
         # Return to original game state
         hexMap.unBlockTile(hexC)
         if maxScore[1] == 100: break # Met win condition
     return maxScore
 
-# Somewhat useless function; GET RID OF USELESSBLOCK BY FIXING FLOODFILL!
-def evalPlayWin(hexMap, coord, score, winCountB, tilesB, freeBlock):
-    bound = max(winCountB.keys())
-    b, winCountA, tilesA = hexMap.floodFill(coord, bound)
-    return (100, None) if not winCountA else (0, min(winCountA.keys()))
+def evalPlayWin(hexMap, coord, score, prevFastest, freeBlock):
+    bound = prevFastest
+    b, fastestWin = hexMap.floodFill(coord, bound)
+    return (100, None) if fastestWin == 100 else (0, fastestWin)
 
 def evalWinning(hexMap, pos, score, freeBlock): # Check if pig wins on next pig move
     if freeBlock: return None

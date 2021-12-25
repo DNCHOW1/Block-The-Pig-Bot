@@ -42,9 +42,9 @@ def debugVisually(gamesList, specific=None):
                         if freeBlock > 0:
                             freeBlock -= 1
                         else:
-                            path = main_map.optimalPath(pigCoord, 1, set(), [], [[0]*(10)], moves<=4)
+                            path = main_map.optimalPath(pigCoord, moves<=4)
                             print(path)
-                            playerWin = main_map.movePig(moves, path[0][1])
+                            playerWin = main_map.movePig(moves, path[0])
                             if playerWin==True:
                                 #print(moveList)
                                 status = "win"
@@ -79,8 +79,8 @@ def debugSilently(gamesList, specific=None):
                 if freeBlock > 0:
                     freeBlock -= 1
                 else:
-                    path = main_map.optimalPath(pigCoord, 1, set(), [], [[0]*(10)], moves<=4)
-                    playerWin = main_map.movePig(moves, path[0][1], draw=False)
+                    path = main_map.optimalPath(pigCoord, moves<=4)
+                    playerWin = main_map.movePig(moves, path[0], draw=False)
                     if playerWin:
                         status = "win"
         print(status)
@@ -97,12 +97,12 @@ if __name__ == "__main__":
             except EOFError:
                 break
     losses = []
-    game = 't' # Not playing the game and wanting it visualized
+    game = 'f' # Not playing the game and wanting it visualized
     try:
         if game == 't':
             debugVisually(gamesList)
         else:
-            debugSilently(gamesList)
+            debugSilently(gamesList,)
     except Exception as e:
         print(f"Exception: {e}")
     finally:

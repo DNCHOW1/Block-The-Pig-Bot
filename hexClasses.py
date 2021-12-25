@@ -171,75 +171,88 @@ class HexMap():
 
     #
     #
-    # Instead of movePig determining win, have blockBot function return bestBlock's after winning Paths
     # If dict is empty, then it is a win!
     def movePig(self, moves, optimalHex, draw=True): # Add another parameter; if simulate, then don't update pig position
         if optimalHex!=0: # Pig still has moves
             tile = self.tiles[optimalHex]
-            self.pig.move(tile.getCP(), draw) # Move this elsewhere???
+            self.pig.move(tile.getCP(), draw)
         else: # Player wins
             return True
 
-    # Have another floodFill instead, this time to get all the optimal paths
-    def optimalPath(self, coord, steps, visited, path, all_paths, notRand): # Where rand changes after a few moves in game;
-                                                                            # pig no longer follows direction arr
-        path_copy = path.copy()
-        path_copy.append(coord)
-        visit_copy = visited.copy()
-        visit_copy.add(coord)
-        tile = self.tiles[coord]
-        visit_copy.update(tile.neighbors.keys())
-        for neighbor in tile.neighbors.keys():
-            if not all_paths or (all_paths and steps+1 <= len(all_paths[-1])-notRand):
-                if neighbor not in visited:
-                    if neighbor in self.winningTiles:
-                        new_path = path_copy + [neighbor]
-                        if len(new_path)!=len(all_paths[-1]):
-                            while all_paths: all_paths.pop()
-                        all_paths.append(path_copy+[neighbor])
-                        continue
-                    self.optimalPath(neighbor, steps+1, visit_copy, path_copy, all_paths, notRand)
-            else:
-                return all_paths
-        return all_paths
+    def optimalPath(self, coord, notRand): # Where rand changes after a few moves in game;
+                                           # pig no longer follows direction arr
 
-    def floodFill(self, start, bound=None): # Good for the beginning 2 step->3 step; maxDist is max amount out you want to go
-        distLook = {2: 4, 3: 4}
-        # If the distance is greater than 4, then just do the 1st block you see
-        # When repurposing floodFill for pig pathfinding, have max range be 11
-        parentTree = {start: None}
-        fringes = [start]
-        viableBlocks = {} # to be returned
-        fastestWin = 100
-        maxDist = distLook.get(bound, bound) if bound else 10
+        parentTree = {coord: None}
+        fringes = [coord]
+        viableMoves = {} # to be returned
+        maxDist = 11
         i = 1
 
         while i <= maxDist:
             temp = []
             for hexC in fringes: # Parent from the last block distance
-                if hexC not in self.winningTiles:
-                    tile = self.tiles[hexC] # Where path[-1] is the last coord arrived at
-                    for neighbor in tile.neighbors.keys():
-                        if neighbor not in parentTree:
-                            parentTree[neighbor] = hexC
+                tile = self.tiles[hexC] # Where path[-1] is the last coord arrived at
+                for neighbor in tile.neighbors.keys():
+                    if neighbor not in parentTree:
+                        parentTree[neighbor] = hexC
+                        temp.append(neighbor)
+                        if neighbor in self.winningTiles: # Indenting this makes 33 test cases run faster
+                            maxDist = i
+
+                            # Function to add winning paths
+                            curr = neighbor
+                            currLevel = i
+                            while currLevel > 0 and curr != coord and curr not in viableMoves:
+                                viableMoves[curr] = currLevel
+                                curr = parentTree[curr] # This sets curr to coord's parent
+                                currLevel -= 1
+                        else:
                             temp.append(neighbor)
-                            if neighbor in self.winningTiles: # Indenting this makes 33 test cases run faster
-                                maxDist = distLook.get(i, i) if maxDist == 10 else maxDist
-                                fastestWin = min(fastestWin, i)
-
-                                # Function to add winning paths
-                                curr = neighbor
-                                currLevel = i
-                                while currLevel > 0 and curr != start and curr not in viableBlocks:
-                                    viableBlocks[curr] = currLevel
-                                    curr = parentTree[curr] # This gets the parent and sets curr to parent
-                                    currLevel -= 1
-
-            fringes = temp
+                if viableMoves and notRand:
+                    return [k for k, v in viableMoves.items() if v == 1]
+            fringes = temp # If viableBlocks, then fringes contains winningTiles.
+                           # Traverse through array and check if winning, then add the path
             i += 1
 
-        ret = (i[0] for i in sorted(viableBlocks.items(), key=lambda x: x[1]))
-        return (ret, fastestWin)
+        return [k for k, v in viableMoves.items() if v == 1] if viableMoves else [0]
+
+    def floodFill(self, start, bound = 11): # Good for the beginning 2 step->3 step; maxDist is max amount out you want to go
+        distLook = {2: 4, 3: 4}
+        # If the distance is greater than 4, then just do the 1st block you see
+        parentTree = {start: None}
+        fringes = [start]
+        viableBlocks = {} # to be returned
+        fastestWin = 100
+        maxDist = distLook.get(bound, bound)
+        i = 1
+
+        while i <= maxDist:
+            temp = []
+            for hexC in fringes: # Parent from the last block distance
+                tile = self.tiles[hexC] # Where path[-1] is the last coord arrived at
+                for neighbor in tile.neighbors.keys():
+                    if neighbor not in parentTree:
+                        parentTree[neighbor] = hexC
+                        if neighbor in self.winningTiles: # Indenting this makes 33 test cases run faster
+                            maxDist = distLook.get(i, i) if maxDist == bound else maxDist
+                            fastestWin = min(fastestWin, i)
+
+                            # Function to add winning paths
+                            curr = neighbor
+                            currLevel = i
+                            while currLevel > 0 and curr != start and curr not in viableBlocks:
+                                viableBlocks[curr] = currLevel
+                                curr = parentTree[curr] # This gets the parent and sets curr to parent
+                                currLevel -= 1
+                        else:
+                            temp.append(neighbor)
+
+            fringes = temp # If viableBlocks, then fringes contains winningTiles.
+                           # Traverse through array and check if winning, then add the path
+            i += 1
+
+        ret = (k for k, v in sorted(viableBlocks.items(), key=lambda x: x[1]))
+        return (ret, fastestWin) # If pathfind and still reaches this line, pig had no viable path to the end
 
     def pxl_to_double(self, point):
         x, y = point

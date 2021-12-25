@@ -56,9 +56,8 @@ if __name__ == "__main__":
                         if freeBlock > 0:
                             freeBlock -= 1
                         else:
-                            path = main_map.optimalPath(pigCoord, 1, set(), [], [[0]*(10)], moves<=4)
-                            print(path)
-                            playerWin = main_map.movePig(moves, path[0][1])
+                            path = main_map.optimalPath(pigCoord, moves<=4)
+                            playerWin = main_map.movePig(moves, path[0])
                             if playerWin==True:
                                 print(moveList)
                                 status = "win"
