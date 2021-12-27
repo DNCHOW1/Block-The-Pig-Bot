@@ -179,6 +179,21 @@ class HexMap():
         else: # Player wins
             return True
 
+    def bfsHelper(self, parentTree, viableTiles, curr, currLevel, start):
+        # Function modifies viableTiles using parentTree
+        while currLevel > 0 and curr != start and curr not in viableTiles:
+            viableTiles[curr] = currLevel
+            curr = parentTree[curr] # This gets the parent and sets curr to parent
+            currLevel -= 1
+
+    def loopHelper(self, fringes, parentTree):
+        for hexC in fringes: # Parent from the last block distance
+            tile = self.tiles[hexC] # Where path[-1] is the last coord arrived at
+            for neighbor in tile.neighbors.keys():
+                if neighbor not in parentTree:
+                    parentTree[neighbor] = hexC
+                    yield neighbor
+
     def optimalPath(self, coord, notRand): # Where rand changes after a few moves in game;
                                            # pig no longer follows direction arr
 
@@ -190,26 +205,13 @@ class HexMap():
 
         while i <= maxDist:
             temp = []
-            for hexC in fringes: # Parent from the last block distance
-                tile = self.tiles[hexC] # Where path[-1] is the last coord arrived at
-                for neighbor in tile.neighbors.keys():
-                    if neighbor not in parentTree:
-                        parentTree[neighbor] = hexC
-                        temp.append(neighbor)
-                        if neighbor in self.winningTiles: # Indenting this makes 33 test cases run faster
-                            maxDist = i
-
-                            # Function to add winning paths
-                            curr = neighbor
-                            currLevel = i
-                            while currLevel > 0 and curr != coord and curr not in viableMoves:
-                                viableMoves[curr] = currLevel
-                                curr = parentTree[curr] # This sets curr to coord's parent
-                                currLevel -= 1
-                        else:
-                            temp.append(neighbor)
-                if viableMoves and notRand:
-                    return [k for k, v in viableMoves.items() if v == 1]
+            for neighbor in self.loopHelper(fringes, parentTree):
+                if neighbor in self.winningTiles: # Indenting this makes 33 test cases run faster
+                    maxDist = i
+                    self.bfsHelper(parentTree, viableMoves, neighbor, i, coord)
+                    if notRand: return [k for k, v in viableMoves.items() if v == 1]
+                else:
+                    temp.append(neighbor)
             fringes = temp # If viableBlocks, then fringes contains winningTiles.
                            # Traverse through array and check if winning, then add the path
             i += 1
@@ -228,24 +230,13 @@ class HexMap():
 
         while i <= maxDist:
             temp = []
-            for hexC in fringes: # Parent from the last block distance
-                tile = self.tiles[hexC] # Where path[-1] is the last coord arrived at
-                for neighbor in tile.neighbors.keys():
-                    if neighbor not in parentTree:
-                        parentTree[neighbor] = hexC
-                        if neighbor in self.winningTiles: # Indenting this makes 33 test cases run faster
-                            maxDist = distLook.get(i, i) if maxDist == bound else maxDist
-                            fastestWin = min(fastestWin, i)
-
-                            # Function to add winning paths
-                            curr = neighbor
-                            currLevel = i
-                            while currLevel > 0 and curr != start and curr not in viableBlocks:
-                                viableBlocks[curr] = currLevel
-                                curr = parentTree[curr] # This gets the parent and sets curr to parent
-                                currLevel -= 1
-                        else:
-                            temp.append(neighbor)
+            for neighbor in self.loopHelper(fringes, parentTree):
+                if neighbor in self.winningTiles: # Indenting this makes 33 test cases run faster
+                    maxDist = distLook.get(i, i) if maxDist == bound else maxDist
+                    fastestWin = min(fastestWin, i)
+                    self.bfsHelper(parentTree, viableBlocks, neighbor, i, start)
+                else:
+                    temp.append(neighbor)
 
             fringes = temp # If viableBlocks, then fringes contains winningTiles.
                            # Traverse through array and check if winning, then add the path

@@ -1,75 +1,56 @@
 import time
 from collections import OrderedDict
 
-def blockBot(hexMap, depth, moves, freeBlock, timeStart=None, score=6, quie=False): # Instead of quie maybe depth? Start at 1, then when this called again it'll be 0##############################
+timelimit = .05
+
+def blockMany(hexMap, depth, moves, freeBlock, pig_pos, coord, timeStart, score):
+    scoreTotal = 0
+    nextMoves = hexMap.optimalPath(coord, moves+1<=4)
+    for move in nextMoves:
+        if not freeBlock: hexMap.movePig(moves+1, move, draw=False)
+        debug, potentialScore = blockBot(hexMap, depth-1, moves+1, max(freeBlock-1, 0), hexMap.pig.pos, timeStart, score, True)
+        hexMap.pig.move(pig_pos, False)
+        if potentialScore < 0:
+            return -100
+        scoreTotal += potentialScore
+    return (scoreTotal / len(nextMoves))
+
+def blockBot(hexMap, depth, moves, freeBlock, pig_pos, timeStart=None, score=6, quie=False): # Instead of quie maybe depth? Start at 1, then when this called again it'll be 0##############################
     # Returns best tile bot can block currently
     # Edit score by evaluating current state
-    if timeStart and time.time() - timeStart >= .1:
-        return (None, -100)
-    pig_pos = hexMap.pig.pos
+    if timeStart and time.time() - timeStart >= timelimit: return (None, -100)
     coord = hexMap.pxl_to_double(pig_pos) if hexMap.draw else pig_pos
     maxScore = (None, -6)
-    hexRange = None
     eval = evalWinning(hexMap, coord, score, freeBlock)
     if eval:
         if eval[0] in hexMap.winningTiles and quie:
-            #print(f"Quiet {eval[0]}")
             hexMap.blockTile(eval[0], draw=False)
             if evalDanger(hexMap, coord, moves+1, True):
                 hexMap.unBlockTile(eval[0])
                 return (None, -100)
 
             # Test the many pig options
-            scoreAvg = 0
-            nextMoves = hexMap.optimalPath(coord, moves+1<=4)
-            for move in nextMoves:
-                if not freeBlock: hexMap.movePig(moves+1, move, draw=False)
-                debug, potentialScore = blockBot(hexMap, depth-1, moves+1, max(freeBlock-1, 0), timeStart, score, True)
-                hexMap.pig.move(pig_pos, False)
-                if potentialScore < 0:
-                    scoreAvg = -100
-                    break
-                scoreAvg += potentialScore
-            scoreAvg /= len(nextMoves)
-
+            scoreAvg = blockMany(hexMap, depth, moves, freeBlock, pig_pos, coord, timeStart, score)
             hexMap.unBlockTile(eval[0])
             return (None, scoreAvg)
         return eval
-    if moves > 2:
-        hexRange, imposs = evalDanger(hexMap, coord, moves)
-        if imposs: return (None, -100) # Override hexRange and imposs if immediate left win,
-                                       # ORRRR, if next move won't be dangerTile
+
+    hexRange, imposs = evalDanger(hexMap, coord, moves)
+    if imposs: return (None, -100)
 
     possList, fastestWin = hexMap.floodFill(coord)
-    timeNow = None
     if fastestWin == 100 and not freeBlock: return (None, 100)  # Immediate win, no winning path in site
     for hexC in (hexRange or possList):
-        if timeStart and time.time() - timeStart >= .1:
-            return maxScore
+        if timeStart and time.time() - timeStart >= timelimit: return maxScore
         new_score, shortestStep = score, 2
         scoreAvg = 0
-        # Copy the game state
         hexMap.blockTile(hexC, draw=False)
         if not freeBlock: new_score, shortestStep = evalPlayWin(hexMap, coord, score, fastestWin, max(freeBlock-1, 0)) # Get the new score for blockBot
-        #print(hexC, new_score, depth, maxScore, winCountB)
-
-        if depth == 1 and not quie: # First iteration
-            timeNow = time.time()
 
         # Play out every possibility until an absolute win
         if (depth >= 1 or shortestStep==2) and new_score!=100:
             # Test the pig's multiple movement options
-            nextMoves = hexMap.optimalPath(coord, moves+1<=4)
-            for move in nextMoves:
-                if not freeBlock: hexMap.movePig(moves+1, move, draw=False)
-                debug, potentialScore = blockBot(hexMap, depth-1, moves+1, max(freeBlock-1, 0), timeNow, new_score, True)
-                hexMap.pig.move(pig_pos, False)
-                if potentialScore < 0:
-                    scoreAvg = -100
-                    break
-                scoreAvg += potentialScore
-            scoreAvg /= len(nextMoves)
-        #print("out")
+            scoreAvg = blockMany(hexMap, depth, moves, freeBlock, pig_pos, coord, timeStart=time.time() if (depth == 1 and not quie) else None, score=new_score)
         maxScore = max((hexC, scoreAvg or new_score), maxScore, key=lambda x: x[1])
 
         # Return to original game state
@@ -83,7 +64,8 @@ def evalPlayWin(hexMap, coord, score, prevFastest, freeBlock):
     return (100, None) if fastestWin == 100 else (0, fastestWin)
 
 def evalWinning(hexMap, pos, score, freeBlock): # Check if pig wins on next pig move
-    if freeBlock: return None
+    if freeBlock:
+        return None
     tile = hexMap.tiles[pos]
     possWin = [neighbor for neighbor in tile.neighbors.keys() if neighbor in hexMap.winningTiles]
     if possWin:
@@ -91,8 +73,8 @@ def evalWinning(hexMap, pos, score, freeBlock): # Check if pig wins on next pig 
         return (pos, -100) if len(possWin) > 1 else (possWin[0], score)
 
 def evalDanger(hexMap, pos, moves, determineDanger=False):
+    if moves <= 2: return (None, False)
     tile = hexMap.tiles[pos]
-    #dger = set()
     dger = OrderedDict()
     count = 0
     for neighbor in tile.neighbors.keys():
