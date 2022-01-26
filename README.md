@@ -24,7 +24,7 @@ To shorten this calculation, the Bot uses Monte-Carlo Tree Search through select
 1. Absolute win is achieved
 2. Possible loss occurs
 
-at which point Bot terminates branch and backs up into previous game state. Right now, the two things preventing the bot from winning every grame are the faulty block detection and input automation. There is just one, one singular block that is often read incorrectly when acquiring webgame data. Moreover, the bot is still not programmed to automate the game, only made to simulate games for the user. Thus, if any deviations in the actual game occurred, the moves made would still be correct but with differing orders.
+at which point Bot terminates branch and backs up into previous game state. Right now, the two things preventing the bot from winning every game are the faulty block detection and input automation. There is just one, one singular block that is often read incorrectly when acquiring webgame data. Moreover, the bot is still not programmed to automate the game, only made to simulate games for the user. Thus, if any deviations in the actual game occurred, the moves made would still be correct but with differing orders.
 
 ## Program In Action
 
