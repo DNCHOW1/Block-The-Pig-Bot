@@ -13,7 +13,7 @@ To achieve all of this, the project features:
 * 34 different games for testing and debugging (all read from webgame).
 
 ## Performance
-Currently, the bot is able to simulate 34 different games in ~2 seconds. This time is a massive improvement over the previous simulation speed (20 seconds) and came as a result of improving the game state copying. Still, heavy bottle-necks sometimes occur at the beginning stages of the game (where bot has 2 free moves) because of the computation depth, preventing the program from running under a second.
+Currently, the bot is able to simulate 34 different games in ~3 seconds. This time is a massive improvement over the previous simulation speed (20 seconds) and came as a result of improving the game state copying. Still, heavy bottle-necks sometimes occur at the beginning stages of the game (where bot has 2 free moves) because of the computation depth, preventing the program from running under a second.
 
 Due to the optimizations in simulation speed, accuracy has improved as well. More pig mobility options can be excercised in various positions while maintaining a efficient runtime, allowing the bot to achieve "perfect" games where no pig move leads to a victory. As a result, the round limit should theoretically be unbounded; however, two errors are preventing this from occurring: dynamic computer vision/automation and inaccurate block detection.
 
@@ -36,14 +36,14 @@ _Not in any particular importance or order to be done_
 3. ~~Optimizing the simulation speed of the different games (by improving game state copying)~~
 4. Optimize performance bottle-necks at "free block" stage of the game
 5. ~~Splitting the functions and classes into multiple files~~
-6. **CLEANING UP CODE IN THE BOT FUNCTIONS AND CLASSES**
+6. ~~**CLEANING UP CODE IN THE BOT FUNCTIONS AND CLASSES**~~
 7. ~~Improving the initial image capture (5 seconds to capture webgame and convert to data)~~
 8. ~~Have program recognize pig's position in webgame~~
 9. ~~Debugging memory leak when running visually~~
 10. ~~Have simulation more accurately mimic real game~~
-11. Fix the incorrect block detection for the one tile
+11. Fix the incorrect block detection for the tile at (6, 2)
 12. Implement bot automation so bot can play webgame without user input
-13. Refactor botFunctions, hexClasses, and hexagonalDraw
+13. ~~Refactor botFunctions, hexClasses, and hexagonalDraw~~
 
 ###### (Dec 2021 Update)
 As of December, performance has improved from 4 seconds to 2 seconds as a result of optimizing floodFill and optimalPath function implementations. 
