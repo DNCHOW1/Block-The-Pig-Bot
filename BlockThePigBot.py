@@ -1,7 +1,7 @@
 # Hexagonal Grid
 import sys, random, pickle, pyautogui, time
 from gameboard import HexMap
-from heuristicbot import HeuristicBot
+from bots import HeuristicBot
 from copyMap import captureNewGame, captureNewPig, hitContinue # There should be functions here instead
 
 if __name__ == "__main__":
