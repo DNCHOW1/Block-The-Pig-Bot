@@ -2,7 +2,7 @@ import pygame
 from collections import OrderedDict
 
 class Tile():
-    def __init__(self, doubleCoord, loc, blocked=False):
+    def __init__(self, doubleCoord: tuple, loc: list, blocked=False):
         self.neighbors = OrderedDict()
         self.blocked = blocked
         self.CP = doubleCoord

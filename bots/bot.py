@@ -3,6 +3,10 @@ from collections import OrderedDict
 
 # To act as a super class
 class Bot:
+    global LOSS, WIN
+    LOSS = -1
+    WIN = 1
+
     def __init__(self, dumb_limit):
         self.gameStateTest = {}
         self.savedSteps = 0
@@ -25,16 +29,21 @@ class Bot:
 
     def evalPlayWin(self, hexMap, coord, prevFastest):
         bound = prevFastest
-        b, fastestWin = hexMap.floodFill(coord, bound)
-        return (100, None) if fastestWin == 100 else (0, fastestWin)
+        _, fastestWin = hexMap.floodFill(coord, bound)
+        return WIN if fastestWin == 100 else LOSS # Player has won
 
     def evalPigWin(self, hexMap, pos, score, freeBlock): # Check if pig wins on next pig move
-        if freeBlock: return None
+        # If freeBlock pig shouldn't move
+        if freeBlock: 
+            return (None, None)
+
         tile = hexMap.tiles[pos]
         possPigWin = [neighbor for neighbor in tile.neighbors.keys() if neighbor in hexMap.winningTiles]
         if possPigWin:
             # If possibleWins > 1, standing on danger tile; else, block tile but continue onwards
-            return (pos, -100) if len(possPigWin) > 1 else (possPigWin[0], score) # Instead of score maybe it should be 100
+            return (pos, LOSS) if len(possPigWin) > 1 else (possPigWin[0], score) # Instead of score maybe it should be 100
+        else:
+            return (None, None)
 
     def evalDanger(self, hexMap, pos, moves):
         if moves <= 2: return (None, False)

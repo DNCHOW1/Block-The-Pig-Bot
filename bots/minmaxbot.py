@@ -3,7 +3,7 @@ from collections import OrderedDict
 
 from .bot import LOSS, Bot
 
-class HeuristicBot(Bot):
+class MinMaxBot(Bot):
     global WIN, LOSS
     WIN = 1
     LOSS = -1
@@ -25,16 +25,14 @@ class HeuristicBot(Bot):
     def blockMany(self, hexMap, moves, freeBlock, coord, score):
         nextMoves = hexMap.optimalPath(coord, moves + 1 <= self.dumb_limit)
         
-        # The heuristic algorithm, finding a solution that forces pig down 1 path
-        if len(nextMoves) > 1:
-            return LOSS
-        else:
-            if not freeBlock: hexMap.movePig(moves+1, nextMoves[0])
+        # Minmax Algorithm, attempting to find absolute win
+        score = 0
+        for move in nextMoves:
+            if not freeBlock: hexMap.movePig(moves+1, move)
             _, result = self.blockBot(hexMap, moves+1, max(freeBlock-1, 0), hexMap.pig.pos, score, True)
-            hexMap.pig.move(coord)
-
-        if result < 0:
-            return LOSS
+            hexMap.pig.move(coord) # Return to original gameState
+            if result < 0:
+                return LOSS
 
         return WIN
 

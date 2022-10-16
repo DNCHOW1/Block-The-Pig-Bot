@@ -3,6 +3,21 @@ import pickle, time, mss, pyautogui
 from pyautogui import locateOnScreen, locateCenterOnScreen
 from math import sqrt
 
+import cv2 as cv
+import numpy as np
+from PIL import ImageGrab, Image
+
+PIG_REGION = (600, 600, 1350, 1800)
+CONTINUE_REGION = (670, 1470, 1180, 1621)
+CONTINUE_BUTTON = cv.imread('./pig_screenshots/continue_button.png')
+PIG_LEFT = cv.imread('./pig_screenshots/pig_left.png')
+PIG_RIGHT = cv.imread('./pig_screenshots/pig_right.png')
+
+# img = ImageGrab.grab(bbox=PIG_REGION)
+# img_cv = cv.cvtColor(np.array(img), cv.COLOR_RGB2BGR)
+# match_prob = cv.matchTemplate(img_cv, PIG_LEFT, cv.TM_CCOEFF_NORMED)
+# match_location = np.unravel_index(match_prob.argmax(), match_probability.shape)
+
 def distFormula(point1, point2):
     return sqrt((point1.x-point2.x)**2 + (point1.y-point2.y)**2)
 
@@ -58,8 +73,8 @@ def captureNewGame():
     tiles[(5, 5)] = "p"
     print(time.perf_counter() - s)
     return tiles, mouse_locs
-    with open('BlockThePig/main_realtime_map_data.pkl', 'wb') as output:
-        pickle.dump(tiles, output)
+    # with open('BlockThePig/main_realtime_map_data.pkl', 'wb') as output:
+    #     pickle.dump(tiles, output)
 
 def captureNewPig(tiles, debug = False): # Needs to get the new pig position
     region = (550, 525, 910, 1421)

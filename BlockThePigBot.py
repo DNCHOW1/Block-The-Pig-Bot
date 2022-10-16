@@ -1,13 +1,13 @@
 # Hexagonal Grid
 import sys, random, pickle, pyautogui, time
 from gameboard import HexMap
-from bots import HeuristicBot
+from bots import HeuristicBot, MinMaxBot
 from copyMap import captureNewGame, captureNewPig, hitContinue # There should be functions here instead
 
 if __name__ == "__main__":
     time.sleep(2)
     round = 1
-    bot = HeuristicBot(3)
+    bot = MinMaxBot(3)
     while True:
         print(f"==================== Round {round} ========================")
         tiles, locs = captureNewGame()
@@ -18,8 +18,10 @@ if __name__ == "__main__":
         main_map = HexMap(num_rows, num_cols, tiles, locs)
         while freeBlock:
             bestBlock, score = bot.blockBot(main_map, moves, freeBlock, main_map.pig.pos)
+            assert(score == 1), print(f"Score unexpected: {score}")
             print(f"Blocking Position: {bestBlock}")
             pyautogui.click(locs[bestBlock])
+            pyautogui.moveTo(100, 800) # Reset position
             main_map.blockTile(bestBlock)
             time.sleep(.3)
             moves += 1
@@ -28,10 +30,12 @@ if __name__ == "__main__":
         finished = False
         while not finished:
             bestBlock, score = bot.blockBot(main_map, moves, freeBlock, main_map.pig.pos)
+            assert(score == 1), print(f"Score unexpected: {score}")
             print(f"Blocking Position: {bestBlock}")
             main_map.blockTile(bestBlock)
-            path = main_map.optimalPath(main_map.pig.pos, moves<=2)
+            path = main_map.optimalPath(main_map.pig.pos, False)
             print(f"Possible Moves: {path}")
+            
             # if bestBlock is none, click some random place to block
             if bestBlock == None: # Either early win or loss
                 pyautogui.click(locs[(0, 0)]) # Attempt to click to finish round
@@ -43,9 +47,9 @@ if __name__ == "__main__":
             time.sleep(.5)
 
             if len(path) > 1:
-                tile_list = []
-                for p in path:
-                    tile_list.append(main_map.tiles[p])
+                tile_list = [main_map.tiles[doubleCoord] for doubleCoord in path]
+                # for p in path:
+                #     tile_list.append(main_map.tiles[p])
                 movedTile = captureNewPig(tile_list)
             else:
                 movedTile = main_map.tiles[path[0]]
