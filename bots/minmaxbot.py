@@ -26,7 +26,6 @@ class MinMaxBot(Bot):
         nextMoves = hexMap.optimalPath(coord, moves + 1 <= self.dumb_limit)
         
         # Minmax Algorithm, attempting to find absolute win
-        score = 0
         for move in nextMoves:
             if not freeBlock: hexMap.movePig(moves+1, move)
             _, result = self.blockBot(hexMap, moves+1, max(freeBlock-1, 0), hexMap.pig.pos, score, True)

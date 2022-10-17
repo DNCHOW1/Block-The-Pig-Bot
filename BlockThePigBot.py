@@ -2,7 +2,7 @@
 import sys, random, pickle, pyautogui, time
 from gameboard import HexMap
 from bots import HeuristicBot, MinMaxBot
-from copyMap import captureNewGame, captureNewPig, hitContinue # There should be functions here instead
+from copyMap import captureNewGame, captureNewPig, hitContinue, captureNewPigCV, hitContinueCV # There should be functions here instead
 
 if __name__ == "__main__":
     time.sleep(2)
@@ -48,9 +48,8 @@ if __name__ == "__main__":
 
             if len(path) > 1:
                 tile_list = [main_map.tiles[doubleCoord] for doubleCoord in path]
-                # for p in path:
-                #     tile_list.append(main_map.tiles[p])
-                movedTile = captureNewPig(tile_list)
+                movedTile = captureNewPigCV(tile_list)
+                print(movedTile.CP)
             else:
                 movedTile = main_map.tiles[path[0]]
             finished = main_map.movePig(None, movedTile.CP)
@@ -58,7 +57,7 @@ if __name__ == "__main__":
             moves += 1
         pyautogui.moveTo(100, 800) # This move and sleep below is to prevent
         time.sleep(.1)          # "Continue" from being hovered
-        hitContinue()
+        hitContinueCV()
         bot.resetSavedStates()
         round += 1
         # Possible pig moves should be represented with tiles

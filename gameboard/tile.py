@@ -10,6 +10,9 @@ class Tile():
         self.x = loc[0]
         self.y = loc[1]
 
+    def getPixelCoord(self):
+        return self.mouse_loc
+
     def getCP(self):
         return self.CP
 
