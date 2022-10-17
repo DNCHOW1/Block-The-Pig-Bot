@@ -22,7 +22,7 @@ class HexMap():
 
     def convert_int_or_bits(self, input, isBits=True, debug=False):
         if isBits:
-            if not self.tiles[input].blocked: print("huh?")
+            if not self.tiles[input].blocked: raise Exception("isBits and blocked")
             row, col = input
             cond = row % 2
             return self.tiles[input].blocked << (row*5 + (col-cond)//2)

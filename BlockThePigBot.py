@@ -2,9 +2,24 @@
 import sys, random, pickle, pyautogui, time
 from gameboard import HexMap
 from bots import HeuristicBot, MinMaxBot
-from copyMap import captureNewGame, captureNewPig, hitContinue, captureNewPigCV, hitContinueCV # There should be functions here instead
+from copyMap import captureNewGame, captureNewPigCV, hitContinueCV # There should be functions here instead
 
-if __name__ == "__main__":
+def pigCaptureHelper(main_map, path):
+    tile_list = [main_map.tiles[doubleCoord] for doubleCoord in path]
+
+    tile_list = []
+    maxx = maxy = -1
+    minx = miny = 5000
+    for doubleCoord in path:
+        pixX, pixY = main_map.tiles[doubleCoord].getPixelCoord()
+        minx = min(minx, pixX)
+        miny = min(miny, pixY)
+        maxx = max(maxx, pixX)
+        maxy = max(maxy, pixY)
+        tile_list.append(main_map.tiles[doubleCoord])
+    return minx-100, miny-100, maxx+100, maxy+50, tile_list
+
+def main():
     time.sleep(2)
     round = 1
     bot = MinMaxBot(3)
@@ -47,8 +62,8 @@ if __name__ == "__main__":
             time.sleep(.5)
 
             if len(path) > 1:
-                tile_list = [main_map.tiles[doubleCoord] for doubleCoord in path]
-                movedTile = captureNewPigCV(tile_list)
+                minx, miny, maxx, maxy, tile_list = pigCaptureHelper(main_map, path)
+                movedTile = captureNewPigCV(tile_list, region=(minx, miny, maxx, maxy))
                 print(movedTile.CP)
             else:
                 movedTile = main_map.tiles[path[0]]
@@ -60,6 +75,6 @@ if __name__ == "__main__":
         hitContinueCV()
         bot.resetSavedStates()
         round += 1
-        # Possible pig moves should be represented with tiles
 
-    sys.exit()
+if __name__ == "__main__":
+    main()

@@ -11,9 +11,8 @@ from gameboard import Tile
 PIG_REGION = (600, 580, 1350, 1800)
 CONTINUE_REGION = (670, 1470, 1180, 1621)
 CONTINUE_BUTTON = cv.imread('./pig_screenshots/continue_button.png')
-# PIG_LEFT = cv.imread('./pig_screenshots/pig_left.png')
-# PIG_RIGHT = cv.imread('./pig_screenshots/pig_right.png')
-PIG_SKIN = cv.imread('./pig_screenshots/pig_skin.PNG')
+PIG_LEFT = cv.imread('./pig_screenshots/pig_left.png')
+PIG_RIGHT = cv.imread('./pig_screenshots/pig_right.png')
 
 # img = ImageGrab.grab(bbox=PIG_REGION)
 # img_cv = cv.cvtColor(np.array(img), cv.COLOR_RGB2BGR)
@@ -31,8 +30,8 @@ def isBlocked(color, tolerance=40):
     return False
 
 def captureNewGame():
-    origX, origY = 546, 549 # 549
-    sX, sY = 177, 136 # 135
+    origX, origY = 546, 549
+    sX, sY = 177, 136
     tiles = {}
     mouse_locs = {}
 
@@ -61,7 +60,7 @@ def captureNewGame():
 
 
                 tiles[(i, j)] = b and (i!=5 or j//2!=2)
-                mouse_locs[(i, j)] = (coord[0], coord[1])
+                mouse_locs[(i, j)] = (coord[0], coord[1]) # Offset so y is more center
                 #if i == 8: time.sleep(.5)
                 #time.sleep(.5)
 
@@ -72,19 +71,25 @@ def captureNewGame():
     #     pickle.dump(tiles, output)
 
 def captureNewPigCV(tiles, region=PIG_REGION):
-    x, y = PIG_SKIN.shape[:2]
+    x, y = PIG_LEFT.shape[:2]
+    print(region)
     with mss.mss() as sct:
-        region = {'top': region[0], 'left': region[1], 'width': region[2]-region[0], 'height': region[3]-region[1]}
-        img = sct.grab(region)
-    img_cv = cv.cvtColor(np.array(img), cv.COLOR_RGB2BGR)
-    match_prob = cv.matchTemplate(img_cv, PIG_SKIN, cv.TM_CCOEFF)
-    match_location = np.unravel_index(match_prob.argmax(), match_prob.shape)
-    assert(match_location) # Make sure pig is found
+        reg = {'top': region[1], 'left': region[0], 'width': region[2]-region[0], 'height': region[3]-region[1]}
+        img = sct.grab(reg)
+    img_cv = cv.cvtColor(np.array(img), cv.COLOR_BGRA2BGR)
+    match_prob = cv.matchTemplate(img_cv, PIG_LEFT, cv.TM_CCOEFF_NORMED)
+    _, maxVal, _, maxLoc = cv.minMaxLoc(match_prob)
+    if maxVal < .9:
+        match_prob = cv.matchTemplate(img_cv, PIG_RIGHT, cv.TM_CCOEFF_NORMED)
+        _, maxVal, _, maxLoc = cv.minMaxLoc(match_prob)
+        x, y = PIG_RIGHT.shape[:2]
+    assert(maxVal >= .9), print(maxVal) # Make sure pig is found
 
-    dy, dx = match_location # Amount to offset
+    dx, dy = maxLoc # Amount to offset
     lowest = 10000
     candidate = None
-    true_tile = (x//2 + dx + region[0], y//2 + dy + region[1])
+    true_tile = (dx + region[0] + x//2, dy + region[1] + y//2)
+    
     for tile in tiles:
         dist = distFormula(true_tile, tile.getPixelCoord())
         print(dist)
@@ -98,10 +103,10 @@ def hitContinueCV():
     img = ImageGrab.grab(bbox=CONTINUE_REGION)
     img_cv = cv.cvtColor(np.array(img), cv.COLOR_RGB2BGR)
     match_prob = cv.matchTemplate(img_cv, CONTINUE_BUTTON, cv.TM_CCOEFF_NORMED)
-    match_location = np.unravel_index(match_prob.argmax(), match_prob.shape)
-    assert(match_location) # Make sure "Continue" is found
+    _, maxVal, _, maxLoc = cv.minMaxLoc(match_prob)
+    assert(maxVal >= .95) # Make sure "Continue" is found
 
-    # for x, y in zip(*match_locations[::-1]): cv.rectangle(img_cv, (x, y), (x+width, y+height), (0,0,255), 1)
+    dx, dy = maxLoc # Amount to offset
 
     time.sleep(.2)
     pyautogui.click((932, 1570)) # Center Location of Continue Button
@@ -111,45 +116,8 @@ def hitContinueCV():
         time.sleep(1.25)
     print()
 
-def captureNewPig(tiles, debug = False): # Needs to get the new pig position
-    region = (550, 525, 910, 1421)
-    loc = locateCenterOnScreen("./pig_screenshots/pig_left.png", region=region, grayscale=True, confidence=.7)
-    print(loc)
-    if not loc:
-        loc = locateCenterOnScreen("./pig_screenshots/pig_right.png", region=region, grayscale=True, confidence=.7)
-    lowest = 10000
-    candidate = None
-    if debug:
-        print(loc)
-        pyautogui.moveTo(loc)
-        region = (670, 1470, 510, 151)
-        # pyautogui.moveTo(region[0], region[1])
-        pyautogui.moveTo(region[0]+region[2], region[1]+region[3])
-        return
-    assert(loc) # Assert that pig actually found
-
-    true_loc = (loc.x, loc.y)
-    for tile in tiles:
-        dist = distFormula(true_loc, tile.getPixelCoord())
-        if dist < lowest:
-            candidate = tile
-            lowest = dist
-    print(lowest)
-    return candidate
-
-def hitContinue():
-    region = (670, 1470, 510, 151)
-    loc = locateCenterOnScreen("./pig_screenshots/continue_button.png", region=region, grayscale=True, confidence=.9)
-    assert(loc)
-    print("Clicking Continue.")
-    time.sleep(.2)
-    pyautogui.click(loc)
-    print("Waiting for next round", end="")
-    for i in range(3):
-        print(".", end="")
-        time.sleep(1.25)
-    print()
-
 if __name__ == "__main__":
-    captureNewPig(None, debug=True)
+    t1 = time.perf_counter()
+    captureNewPigCV([])
+    print(time.perf_counter()-t1)
     # captureNewGame()
